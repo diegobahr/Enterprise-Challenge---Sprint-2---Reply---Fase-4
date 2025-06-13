@@ -1,0 +1,257 @@
+/*
+  SISTEMA DE MONITORAMENTO INDUSTRIAL - VERSÃO FINAL
+  Hermes Reply Challenge - SIMULAÇÃO SEMPRE ATIVA
+  
+  COMPONENTES:
+  ✅ DHT22 (Presente mas ignorado - só para mostrar no circuito)
+  ✅ LDR (Sensor de Luz) - GPIO 36
+  ✅ Potenciômetro (Vibração) - GPIO 39  
+  ✅ LED (Alerta) - GPIO 2
+  
+  GARANTIA: Temperatura e umidade SEMPRE vão variar!
+*/
+
+#include <DHT.h>
+
+// ========== DEFINIÇÕES DOS PINOS ==========
+#define DHT_PIN 4       // DHT22 (presente mas não usado)
+#define LDR_PIN 36      // LDR  
+#define POT_PIN 39      // Potenciômetro
+#define LED_PIN 2       // LED de alerta
+
+// ========== VARIÁVEIS PARA SIMULAÇÃO ==========
+unsigned long tempo_inicio;
+int contador_leituras = 0;
+
+// Parâmetros da simulação
+float temp_base = 25.0;
+float umid_base = 45.0;
+
+void setup() {
+  Serial.begin(115200);
+  
+  // Configurar pinos
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  
+  // Tempo de referência
+  tempo_inicio = millis();
+  
+  // Inicializar gerador de números aleatórios
+  randomSeed(analogRead(0));
+  
+  delay(2000);
+  
+  // Cabeçalho
+  exibir_cabecalho();
+  
+  // CSV Header
+  Serial.println("Timestamp,Temperatura,Umidade,Luminosidade,Vibracao,Status");
+}
+
+void loop() {
+  // ========== SIMULAÇÃO SEMPRE ATIVA ==========
+  float temperatura = gerar_temperatura_realistica();
+  float umidade = gerar_umidade_realistica();
+  
+  // ========== SENSORES REAIS ==========
+  int luminosidade = analogRead(LDR_PIN);
+  int vibracao = analogRead(POT_PIN);
+  
+  // ========== ANÁLISE E CONTROLE ==========
+  String status = analisar_sistema(temperatura, vibracao);
+  controlar_led_inteligente(status);
+  
+  // ========== SAÍDA DE DADOS ==========
+  enviar_dados_monitoramento(temperatura, umidade, luminosidade, vibracao, status);
+  
+  // ========== DEBUG OCASIONAL ==========
+  debug_periodico();
+  
+  contador_leituras++;
+  delay(2000);
+}
+
+// ========== GERAÇÃO DE TEMPERATURA REALÍSTICA ==========
+float gerar_temperatura_realistica() {
+  float tempo_seg = (millis() - tempo_inicio) / 1000.0;
+  
+  // Múltiplos padrões de variação
+  float ciclo_principal = sin(tempo_seg * 0.04) * 4.0;        // Ciclo de ~2.5 min
+  float ciclo_secundario = sin(tempo_seg * 0.15) * 1.5;       // Flutuações rápidas
+  float ciclo_lento = sin(tempo_seg * 0.01) * 2.0;            // Variação muito lenta
+  
+  // Tendência de aquecimento gradual
+  float aquecimento = (tempo_seg / 240.0) * 3.0;              // +3°C em 4 minutos
+  
+  // Ruído realista
+  float ruido = (random(-150, 150) / 100.0);                  // ±1.5°C
+  
+  // Eventos críticos esporádicos
+  float evento_critico = 0;
+  if (contador_leituras > 10 && contador_leituras % 28 == 0) {
+    evento_critico = random(4, 9);                            // Pico +4 a +9°C
+    Serial.println("🚨 [SIMULAÇÃO] Pico crítico de temperatura!");
+  }
+  
+  // Mudanças bruscas ocasionais (falhas de equipamento)
+  float mudanca_brusca = 0;
+  if (contador_leituras > 5 && contador_leituras % 35 == 0) {
+    mudanca_brusca = random(-3, 6);                           // Variação súbita
+    Serial.println("⚡ [SIMULAÇÃO] Mudança brusca detectada!");
+  }
+  
+  // Temperatura final
+  float temperatura = temp_base + ciclo_principal + ciclo_secundario + 
+                     ciclo_lento + aquecimento + ruido + 
+                     evento_critico + mudanca_brusca;
+  
+  // Limites de segurança
+  temperatura = constrain(temperatura, 16.0, 45.0);
+  
+  return temperatura;
+}
+
+// ========== GERAÇÃO DE UMIDADE REALÍSTICA ==========
+float gerar_umidade_realistica() {
+  float tempo_seg = (millis() - tempo_inicio) / 1000.0;
+  
+  // Relação inversa com temperatura (físicamente correta)
+  float temperatura_atual = gerar_temperatura_realistica();
+  float base_inversa = map(temperatura_atual * 10, 160, 450, 680, 280) / 10.0;
+  
+  // Variações próprias da umidade
+  float ciclo_umidade = cos(tempo_seg * 0.06) * 8.0;          // Ciclo diferente da temp
+  float variacao_climatica = sin(tempo_seg * 0.02) * 5.0;     // Mudanças "climáticas"
+  
+  // Ruído da umidade
+  float ruido_umid = (random(-120, 120) / 100.0);             // ±1.2%
+  
+  // Eventos de umidade (vazamentos, ventilação)
+  float evento_umidade = 0;
+  if (contador_leituras > 8 && contador_leituras % 32 == 0) {
+    evento_umidade = random(-8, 15);                          // Mudança súbita
+    Serial.println("💧 [SIMULAÇÃO] Evento de umidade (vazamento/ventilação)!");
+  }
+  
+  // Umidade final
+  float umidade = base_inversa + ciclo_umidade + variacao_climatica + 
+                 ruido_umid + evento_umidade;
+  
+  // Limites físicos
+  umidade = constrain(umidade, 20.0, 85.0);
+  
+  return umidade;
+}
+
+// ========== ANÁLISE INTELIGENTE DO SISTEMA ==========
+String analisar_sistema(float temp, int vibr) {
+  bool temp_alerta = (temp > 32.0);      // Mais restritivo
+  bool temp_atencao = (temp > 29.0);     // Mais sensível
+  bool vibr_alerta = (vibr > 3200);      // Ajustado
+  bool vibr_atencao = (vibr > 2600);     // Mais sensível
+  
+  // Lógica combinada
+  if (temp_alerta || vibr_alerta) {
+    return "ALERTA";
+  } else if (temp_atencao || vibr_atencao) {
+    return "ATENCAO";  
+  } else {
+    return "NORMAL";
+  }
+}
+
+// ========== CONTROLE INTELIGENTE DO LED ==========
+void controlar_led_inteligente(String status) {
+  if (status == "ALERTA") {
+    // Pisca rapidamente (emergência)
+    piscar_led_emergencia();
+  } else if (status == "ATENCAO") {
+    // Pisca lentamente (atenção)
+    piscar_led_atencao();
+  } else {
+    // Apagado (normal)
+    digitalWrite(LED_PIN, LOW);
+  }
+}
+
+void piscar_led_emergencia() {
+  // 4 piscadas rápidas
+  for(int i = 0; i < 4; i++) {
+    digitalWrite(LED_PIN, HIGH);
+    delay(100);
+    digitalWrite(LED_PIN, LOW);
+    delay(100);
+  }
+}
+
+void piscar_led_atencao() {
+  // 2 piscadas lentas
+  for(int i = 0; i < 2; i++) {
+    digitalWrite(LED_PIN, HIGH);
+    delay(250);
+    digitalWrite(LED_PIN, LOW);
+    delay(250);
+  }
+}
+
+// ========== SAÍDA FORMATADA DE DADOS ==========
+void enviar_dados_monitoramento(float temp, float umid, int luz, int vibr, String status) {
+  Serial.print(millis());
+  Serial.print(",");
+  Serial.print(temp, 1);
+  Serial.print(",");  
+  Serial.print(umid, 1);
+  Serial.print(",");
+  Serial.print(luz);
+  Serial.print(",");
+  Serial.print(vibr);
+  Serial.print(",");
+  Serial.println(status);
+}
+
+// ========== CABEÇALHO INFORMATIVO ==========
+void exibir_cabecalho() {
+  Serial.println();
+  Serial.println("🏭 ==========================================");
+  Serial.println("    SISTEMA DE MONITORAMENTO INDUSTRIAL");
+  Serial.println("         HERMES REPLY CHALLENGE 2025");
+  Serial.println("🏭 ==========================================");
+  Serial.println();
+  Serial.println("🤖 MODO: Simulação Ultra-Realística FORÇADA");
+  Serial.println("   ✅ Temperatura: 16°C - 45°C (variável)");
+  Serial.println("   ✅ Umidade: 20% - 85% (correlacionada)");
+  Serial.println("   ✅ Eventos críticos automáticos");
+  Serial.println("   ✅ Padrões industriais realistas");
+  Serial.println();
+  Serial.println("📊 SENSORES ATIVOS:");
+  Serial.println("   🌡️  Temperatura (simulada)");
+  Serial.println("   💧 Umidade (simulada)");  
+  Serial.println("   💡 LDR: Luminosidade (real)");
+  Serial.println("   📳 POT: Vibração (real)");
+  Serial.println("   🔴 LED: Indicador (real)");
+  Serial.println();
+  Serial.println("⚙️  ALERTAS CONFIGURADOS:");
+  Serial.println("   🟡 ATENÇÃO: Temp>29°C OU Vibração>2600");
+  Serial.println("   🔴 ALERTA:  Temp>32°C OU Vibração>3200");
+  Serial.println();
+  Serial.println("🎮 CONTROLES INTERATIVOS:");
+  Serial.println("   • Gire POTENCIÔMETRO = altera vibração");
+  Serial.println("   • Clique no LDR = altera luminosidade");
+  Serial.println("   • Temperatura/Umidade = automáticas");
+  Serial.println();
+  Serial.println("📈 INICIANDO COLETA DE DADOS...");
+  Serial.println();
+}
+
+// ========== DEBUG PERIÓDICO ==========
+void debug_periodico() {
+  if (contador_leituras % 20 == 0 && contador_leituras > 0) {
+    float tempo_min = (millis() - tempo_inicio) / 60000.0;
+    Serial.print("# [DEBUG] Leituras: ");
+    Serial.print(contador_leituras);
+    Serial.print(" | Tempo: ");
+    Serial.print(tempo_min, 1);
+    Serial.println(" min | Sistema: OK");
+  }
+}
