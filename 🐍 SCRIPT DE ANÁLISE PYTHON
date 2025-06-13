@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""
+SCRIPT PYTHON PARA ANÁLISE DE DADOS
+Sistema de Monitoramento Industrial - Hermes Reply Challenge
+
+COMO USAR:
+1. Copie os dados do Monitor Serial do Wokwi
+2. Cole na variável 'dados_csv' abaixo
+3. Execute o script: python analise_dados.py
+4. Os gráficos serão salvos automaticamente
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from datetime import datetime
+import warnings
+warnings.filterwarnings('ignore')
+
+# Configurações para gráficos bonitos
+plt.style.use('default')
+sns.set_palette("husl")
+plt.rcParams['figure.figsize'] = (12, 8)
+plt.rcParams['font.size'] = 10
+
+# ===============================================
+# 📋 COLE SEUS DADOS AQUI (do Monitor Serial)
+# ===============================================
+
+dados_csv = """Timestamp,Temperatura,Umidade,Luminosidade,Vibracao,Status
+2000,23.4,45.2,1024,856,NORMAL
+4000,24.1,44.8,1156,1024,NORMAL
+6000,25.2,43.1,1089,1456,NORMAL
+8000,26.8,42.5,1234,1789,NORMAL
+10000,28.5,41.8,1345,2123,ATENCAO
+12000,31.2,40.1,1456,3456,ALERTA
+14000,29.8,41.2,1234,2890,ATENCAO
+16000,27.3,42.8,1123,1567,NORMAL
+18000,25.9,43.5,1089,1234,NORMAL
+20000,24.6,44.1,1156,987,NORMAL
+22000,23.8,45.0,1200,1100,NORMAL
+24000,32.1,39.5,1300,3200,ALERTA
+26000,30.5,40.8,1250,2800,ATENCAO
+28000,28.2,42.1,1180,1900,NORMAL
+30000,26.4,43.7,1150,1400,NORMAL"""
+
+def processar_dados():
+    """Processar dados CSV e preparar para análise"""
+    from io import StringIO
+    df = pd.read_csv(StringIO(dados_csv))
+    df['Tempo_seg'] = df['Timestamp'] / 1000
+    df['Tempo_min'] = df['Tempo_seg'] / 60
+    
+    print("✅ Dados processados com sucesso!")
+    print(f"📊 Total de leituras: {len(df)}")
+    print(f"⏱️  Período monitorado: {df['Tempo_min'].max():.1f} minutos")
+    
+    return df
+
+def grafico_temperatura(df):
+    """Gráfico de linha mostrando evolução da temperatura"""
+    plt.figure(figsize=(12, 6))
+    
+    plt.plot(df['Tempo_min'], df['Temperatura'], 
+             linewidth=2, marker='o', markersize=4, 
+             color='#FF6B6B', label='Temperatura')
+    
+    plt.axhline(y=29, color='orange', linestyle='--', alpha=0.7, 
+                label='Atenção (29°C)')
+    plt.axhline(y=32, color='red', linestyle='--', alpha=0.7, 
+                label='Alerta (32°C)')
+    
+    alertas = df[df['Status'] == 'ALERTA']
+    if len(alertas) > 0:
+        plt.scatter(alertas['Tempo_min'], alertas['Temperatura'], 
+                   color='red', s=100, zorder=5, label='Pontos de Alerta')
+    
+    plt.title('📊 Monitoramento de Temperatura Industrial\nSistema Hermes Reply', 
+              fontsize=14, fontweight='bold', pad=20)
+    plt.xlabel('Tempo (minutos)', fontsize=12)
+    plt.ylabel('Temperatura (°C)', fontsize=12)
+    plt.legend(fontsize=10)
+    plt.grid(True, alpha=0.3)
+    
+    temp_max = df.loc[df['Temperatura'].idxmax()]
+    plt.annotate(f'Pico: {temp_max["Temperatura"]:.1f}°C', 
+                xy=(temp_max['Tempo_min'], temp_max['Temperatura']),
+                xytext=(10, 10), textcoords='offset points',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
+                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+    
+    plt.tight_layout()
+    plt.savefig('1_temperatura_temporal.png', dpi=300, bbox_inches='tight')
+    print("✅ Gráfico 1 salvo: 1_temperatura_temporal.png")
+    plt.show()
+
+def grafico_correlacao(df):
+    """Gráfico de dispersão mostrando correlação"""
+    plt.figure(figsize=(10, 8))
+    
+    cores = {'NORMAL': '#2ECC71', 'ATENCAO': '#F39C12', 'ALERTA': '#E74C3C'}
+    
+    for status in df['Status'].unique():
+        dados_status = df[df['Status'] == status]
+        plt.scatter(dados_status['Temperatura'], dados_status['Vibracao'],
+                   c=cores[status], label=status, alpha=0.7, s=60)
+    
+    z = np.polyfit(df['Temperatura'], df['Vibracao'], 1)
+    p = np.poly1d(z)
+    plt.plot(df['Temperatura'], p(df['Temperatura']), 
+             "r--", alpha=0.8, linewidth=2, label='Tendência')
+    
+    correlacao = df['Temperatura'].corr(df['Vibracao'])
+    
+    plt.title(f'📊 Correlação: Temperatura vs Vibração\nCorrelação: {correlacao:.3f}', 
+              fontsize=14, fontweight='bold', pad=20)
+    plt.xlabel('Temperatura (°C)', fontsize=12)
+    plt.ylabel('Vibração (unidades)', fontsize=12)
+    plt.legend(fontsize=10)
+    plt.grid(True, alpha=0.3)
+    
+    plt.text(0.05, 0.95, f'Correlação de Pearson: {correlacao:.3f}', 
+             transform=plt.gca().transAxes, fontsize=11,
+             bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
+    
+    plt.tight_layout()
+    plt.savefig('2_correlacao_temp_vibracao.png', dpi=300, bbox_inches='tight')
+    print("✅ Gráfico 2 salvo: 2_correlacao_temp_vibracao.png")
+    plt.show()
+
+def grafico_status(df):
+    """Gráfico de barras mostrando distribuição dos status"""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    
+    status_counts = df['Status'].value_counts()
+    cores_status = ['#2ECC71', '#F39C12', '#E74C3C']
+    
+    bars = ax1.bar(status_counts.index, status_counts.values, 
+                   color=cores_status[:len(status_counts)])
+    
+    for bar in bars:
+        height = bar.get_height()
+        ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                f'{int(height)}', ha='center', va='bottom', fontweight='bold')
+    
+    ax1.set_title('📊 Distribuição dos Status do Sistema', fontweight='bold')
+    ax1.set_ylabel('Quantidade de Leituras')
+    ax1.grid(True, alpha=0.3)
+    
+    ax2.pie(status_counts.values, labels=status_counts.index, autopct='%1.1f%%',
+            colors=cores_status[:len(status_counts)], startangle=90)
+    ax2.set_title('📊 Percentual dos Status', fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig('3_distribuicao_status.png', dpi=300, bbox_inches='tight')
+    print("✅ Gráfico 3 salvo: 3_distribuicao_status.png")
+    plt.show()
+
+def dashboard_completo(df):
+    """Dashboard com todos os sensores"""
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+    fig.suptitle('🏭 Dashboard Sistema de Monitoramento Industrial\nHermes Reply Challenge', 
+                 fontsize=16, fontweight='bold')
+    
+    # 1. Temperatura
+    axes[0,0].plot(df['Tempo_min'], df['Temperatura'], 'r-o', markersize=3)
+    axes[0,0].axhline(y=32, color='red', linestyle='--', alpha=0.7)
+    axes[0,0].set_title('🌡️ Temperatura')
+    axes[0,0].set_ylabel('°C')
+    axes[0,0].grid(True, alpha=0.3)
+    
+    # 2. Umidade
+    axes[0,1].plot(df['Tempo_min'], df['Umidade'], 'b-s', markersize=3)
+    axes[0,1].set_title('💧 Umidade')
+    axes[0,1].set_ylabel('%')
+    axes[0,1].grid(True, alpha=0.3)
+    
+    # 3. Luminosidade
+    axes[1,0].plot(df['Tempo_min'], df['Luminosidade'], 'y-^', markersize=3)
+    axes[1,0].set_title('💡 Luminosidade')
+    axes[1,0].set_xlabel('Tempo (min)')
+    axes[1,0].set_ylabel('Unidades')
+    axes[1,0].grid(True, alpha=0.3)
+    
+    # 4. Vibração
+    axes[1,1].plot(df['Tempo_min'], df['Vibracao'], 'g-d', markersize=3)
+    axes[1,1].axhline(y=3200, color='red', linestyle='--', alpha=0.7)
+    axes[1,1].set_title('📳 Vibração')
+    axes[1,1].set_xlabel('Tempo (min)')
+    axes[1,1].set_ylabel('Unidades')
+    axes[1,1].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('4_dashboard_completo.png', dpi=300, bbox_inches='tight')
+    print("✅ Gráfico 4 salvo: 4_dashboard_completo.png")
+    plt.show()
+
+def gerar_relatorio(df):
+    """Gerar relatório com estatísticas"""
+    print("\n" + "="*60)
+    print("📋 RELATÓRIO ESTATÍSTICO - SISTEMA HERMES REPLY")
+    print("="*60)
+    
+    print(f"\n📊 RESUMO GERAL:")
+    print(f"   • Total de leituras: {len(df)}")
+    print(f"   • Período monitorado: {df['Tempo_min'].max():.1f} minutos")
+    print(f"   • Intervalo entre leituras: {df['Tempo_seg'].diff().mean():.1f} segundos")
+    
+    print(f"\n🌡️  TEMPERATURA:")
+    print(f"   • Média: {df['Temperatura'].mean():.1f}°C")
+    print(f"   • Mínima: {df['Temperatura'].min():.1f}°C")
+    print(f"   • Máxima: {df['Temperatura'].max():.1f}°C")
+    print(f"   • Desvio padrão: {df['Temperatura'].std():.1f}°C")
+    
+    print(f"\n📳 VIBRAÇÃO:")
+    print(f"   • Média: {df['Vibracao'].mean():.0f} unidades")
+    print(f"   • Mínima: {df['Vibracao'].min():.0f} unidades")
+    print(f"   • Máxima: {df['Vibracao'].max():.0f} unidades")
+    
+    print(f"\n🚨 ALERTAS:")
+    status_counts = df['Status'].value_counts()
+    for status in ['NORMAL', 'ATENCAO', 'ALERTA']:
+        if status in status_counts:
+            pct = (status_counts[status] / len(df)) * 100
+            print(f"   • {status}: {status_counts[status]} ({pct:.1f}%)")
+    
+    print(f"\n🔗 CORRELAÇÕES:")
+    print(f"   • Temperatura vs Vibração: {df['Temperatura'].corr(df['Vibracao']):.3f}")
+    print(f"   • Temperatura vs Umidade: {df['Temperatura'].corr(df['Umidade']):.3f}")
+
+def main():
+    """Função principal - executa toda a análise"""
+    print("🚀 INICIANDO ANÁLISE DOS DADOS...")
+    print("Hermes Reply Challenge - Sistema de Monitoramento Industrial")
+    print("="*60)
+    
+    df = processar_dados()
+    
+    print("\n📈 Gerando gráficos...")
+    grafico_temperatura(df)
+    grafico_correlacao(df)
+    grafico_status(df)
+    dashboard_completo(df)
+    
+    gerar_relatorio(df)
+    
+    print("\n🎉 ANÁLISE COMPLETA!")
+    print("Arquivos gerados:")
+    print("   • 1_temperatura_temporal.png")
+    print("   • 2_correlacao_temp_vibracao.png") 
+    print("   • 3_distribuicao_status.png")
+    print("   • 4_dashboard_completo.png")
+    print("\n✅ Pronto para entregar o trabalho!")
+
+if __name__ == "__main__":
+    main()
