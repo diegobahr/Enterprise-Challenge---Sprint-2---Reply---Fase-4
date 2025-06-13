@@ -5,16 +5,16 @@
 
 INTEGRANTES DO GRUPO
 
-Diego Rodrigo Bahr - RM563492 - diegobahr@gmail.com
-Rafael Lima Jordão - RM563855 - rafaelimajordao@gmail.com
-Nelson Ruiz Gimenes Júnior - RM562672 - nelsongimenesjr10@gmail.com
-João Victor Mendes Nogueira Francez - RM564913 - joaovictorfrancez@outlook.com
+- Diego Rodrigo Bahr - RM563492 - diegobahr@gmail.com
+- Rafael Lima Jordão - RM563855 - rafaelimajordao@gmail.com
+- Nelson Ruiz Gimenes Júnior - RM562672 - nelsongimenesjr10@gmail.com
+- João Victor Mendes Nogueira Francez - RM564913 - joaovictorfrancez@outlook.com
 
 INFORMAÇÕES DO PROJETO
 
-Repositório GitHub: https://github.com/diegobahr/Hermes-Reply-Challenge
-Demonstração Wokwi: https://wokwi.com/projects/433660754896975873
-Data de Entrega: 13 de junho de 2025
+- Repositório GitHub: https://github.com/diegobahr/Hermes-Reply-Challenge
+- Demonstração Wokwi: https://wokwi.com/projects/433660754896975873
+- Data de Entrega: 13 de junho de 2025
 
 ---
 
