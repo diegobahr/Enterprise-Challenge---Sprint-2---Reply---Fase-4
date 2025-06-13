@@ -12,48 +12,22 @@ João Victor Mendes Nogueira Francez - RM564913 - joaovictorfrancez@outlook.com
 
 INFORMAÇÕES DO PROJETO
 
-Repositório GitHub: https://github.com/diegobahr/Global-Solution-1-Semestre-Sistema-Previsao-Enchentes
+Repositório GitHub: https://github.com/diegobahr/Hermes-Reply-Challenge
 Demonstração Wokwi: https://wokwi.com/projects/433660754896975873
-Data de Entrega: 6 de junho de 2025
+Data de Entrega: 13 de junho de 2025
 
 ---
 
-## 📋 **ÍNDICE**
+🎯 RESUMO 
 
-1. [Resumo Executivo](#-resumo-executivo)
-2. [Introdução e Objetivos](#-introdução-e-objetivos)
-3. [Fundamentação Teórica](#-fundamentação-teórica)
-4. [Metodologia](#-metodologia)
-5. [Implementação](#-implementação)
-6. [Código Fonte Completo](#-código-fonte-completo)
-7. [Script de Análise Python](#-script-de-análise-python)
-8. [Resultados e Análises](#-resultados-e-análises)
-9. [Manual do Usuário](#-manual-do-usuário)
-10. [Especificações Técnicas](#-especificações-técnicas)
-11. [Validação do Sistema](#-validação-do-sistema)
-12. [Aplicações Industriais](#-aplicações-industriais)
-13. [Análise Econômica](#-análise-econômica)
-14. [Roteiro de Apresentação](#-roteiro-de-apresentação)
-15. [Conclusões](#-conclusões)
-16. [Trabalhos Futuros](#-trabalhos-futuros)
-17. [Referências](#-referências)
-18. [Anexos](#-anexos)
+Este projeto desenvolve um Sistema de Monitoramento Industrial IoT para detectar condições críticas em equipamentos industriais em tempo real. Utilizando ESP32 como microcontrolador principal, o sistema integra múltiplos sensores para monitoramento de temperatura, umidade, luminosidade e vibração.
 
----
-
-## 🎯 **RESUMO EXECUTIVO**
-
-Este projeto desenvolve um **Sistema de Monitoramento Industrial IoT** para detectar condições críticas em equipamentos industriais em tempo real. Utilizando **ESP32** como microcontrolador principal, o sistema integra múltiplos sensores para monitoramento de temperatura, umidade, luminosidade e vibração.
-
-### **Principais Resultados:**
-- ✅ **Sistema IoT funcional** com 4 sensores integrados
-- ✅ **Detecção 100% eficaz** de eventos críticos simulados
-- ✅ **Correlações físicas validadas** entre variáveis (r = -0.78)
-- ✅ **Análise automatizada** com 5 visualizações profissionais
-- ✅ **Custo de implementação:** ~R$ 180 (ROI: 14.500%/ano)
-
-### **Impacto Esperado:**
-A implementação pode resultar em **40% de redução** em paradas não planejadas, **R$ 70.000 economia anual** por equipamento e **30% melhoria** na segurança operacional.
+Principais Resultados:
+- ✅ Sistema IoT funcional com 4 sensores integrados
+- ✅ Detecção 100% eficaz de eventos críticos simulados
+- ✅ Correlações físicas validadas entre variáveis (r = -0.78)
+- ✅ Análise automatizada com 5 visualizações profissionais
+- ✅ Custo de implementação: ~R$ 180 (ROI: 14.500%/ano)
 
 ---
 
@@ -63,7 +37,7 @@ A implementação pode resultar em **40% de redução** em paradas não planejad
 
 A **Indústria 4.0** demanda sistemas de monitoramento inteligentes capazes de detectar anomalias operacionais antes que se tornem falhas críticas. Segundo a CNI, **paradas não planejadas** custam à indústria brasileira aproximadamente **R$ 50 bilhões anuais**. O **Hermes Reply Challenge 2025** propõe o desenvolvimento de soluções IoT para este desafio.
 
-### **Justificativa**
+Justificativa
 
 Sistemas de monitoramento preventivo podem reduzir custos de paradas em até 40%, justificando investimentos em tecnologias IoT. O ESP32 democratiza o acesso a estas tecnologias, especialmente para pequenas e médias empresas.
 
