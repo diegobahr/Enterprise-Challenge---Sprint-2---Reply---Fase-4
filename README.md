@@ -27,7 +27,6 @@ Este projeto desenvolve um Sistema de Monitoramento Industrial IoT para detectar
 - ✅ Detecção 100% eficaz de eventos críticos simulados
 - ✅ Correlações físicas validadas entre variáveis (r = -0.78)
 - ✅ Análise automatizada com 5 visualizações profissionais
-- ✅ Custo de implementação: ~R$ 180 (ROI: 14.500%/ano)
 
 ---
 
