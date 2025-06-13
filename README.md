@@ -1,5 +1,5 @@
-Enterprise Challenge - Sprint 2 - Reply - Fase 4
-🏭 Sistema de Monitoramento Industrial IoT
+## Enterprise Challenge - Sprint 2 - Reply - Fase 4
+## 🏭 Sistema de Monitoramento Industrial IoT
 
 ---
 
@@ -22,7 +22,7 @@ Data de Entrega: 13 de junho de 2025
 
 Este projeto desenvolve um Sistema de Monitoramento Industrial IoT para detectar condições críticas em equipamentos industriais em tempo real. Utilizando ESP32 como microcontrolador principal, o sistema integra múltiplos sensores para monitoramento de temperatura, umidade, luminosidade e vibração.
 
-Principais Resultados:
+## Principais Resultados:
 - ✅ Sistema IoT funcional com 4 sensores integrados
 - ✅ Detecção 100% eficaz de eventos críticos simulados
 - ✅ Correlações físicas validadas entre variáveis (r = -0.78)
@@ -31,20 +31,20 @@ Principais Resultados:
 
 ---
 
-## 🎯 **INTRODUÇÃO E OBJETIVOS**
+## 🎯 INTRODUÇÃO E OBJETIVOS
 
-### **Contexto do Problema**
+### Contexto do Problema
 
-A **Indústria 4.0** demanda sistemas de monitoramento inteligentes capazes de detectar anomalias operacionais antes que se tornem falhas críticas. Segundo a CNI, **paradas não planejadas** custam à indústria brasileira aproximadamente **R$ 50 bilhões anuais**. O **Hermes Reply Challenge 2025** propõe o desenvolvimento de soluções IoT para este desafio.
+A Indústria 4.0 demanda sistemas de monitoramento inteligentes capazes de detectar anomalias operacionais antes que se tornem falhas críticas. Segundo a CNI, paradas não planejadas custam à indústria brasileira aproximadamente R$ 50 bilhões anuais. O Hermes Reply Challenge 2025 propõe o desenvolvimento de soluções IoT para este desafio.
 
-Justificativa
+### Justificativa
 
 Sistemas de monitoramento preventivo podem reduzir custos de paradas em até 40%, justificando investimentos em tecnologias IoT. O ESP32 democratiza o acesso a estas tecnologias, especialmente para pequenas e médias empresas.
 
-### **Objetivo Geral**
+### Objetivo Geral
 Desenvolver um sistema IoT para monitoramento industrial que detecte automaticamente condições anômalas e gere alertas preventivos.
 
-### **Objetivos Específicos**
+### Objetivos Específicos
 - Implementar monitoramento multi-sensor em tempo real
 - Desenvolver algoritmos de detecção de anomalias
 - Criar interface de visualização e análise de dados
