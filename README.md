@@ -12,7 +12,7 @@ INTEGRANTES DO GRUPO
 
 INFORMAÇÕES DO PROJETO
 
-- Repositório GitHub: https://github.com/diegobahr/Hermes-Reply-Challenge
+- Repositório GitHub: https://github.com/diegobahr/Enterprise-Challenge---Sprint-2---Reply---Fase-4
 - Demonstração Wokwi: https://wokwi.com/projects/433660754896975873
 - Data de Entrega: 13 de junho de 2025
 
