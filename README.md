@@ -515,14 +515,17 @@ void debug_periodico() {
 ```python
 #!/usr/bin/env python3
 """
-SCRIPT PYTHON PARA ANÁLISE DE DADOS
+SCRIPT PYTHON PARA TRABALHO DA FACULDADE
 Sistema de Monitoramento Industrial - Hermes Reply Challenge
 
 COMO USAR:
 1. Copie os dados do Monitor Serial do Wokwi
-2. Cole na variável 'dados_csv' abaixo
-3. Execute o script: python analise_dados.py
+2. Cole na variável 'dados_csv' abaixo (linha 25)
+3. Execute o script
 4. Os gráficos serão salvos automaticamente
+
+Autores: [Seus nomes aqui]
+Data: [Data atual]
 """
 
 import pandas as pd
@@ -560,11 +563,21 @@ dados_csv = """Timestamp,Temperatura,Umidade,Luminosidade,Vibracao,Status
 28000,28.2,42.1,1180,1900,NORMAL
 30000,26.4,43.7,1150,1400,NORMAL"""
 
+# ===============================================
+# 🔧 PROCESSAMENTO DOS DADOS
+# ===============================================
+
 def processar_dados():
     """Processar dados CSV e preparar para análise"""
+    
+    # Converter string CSV em DataFrame
     from io import StringIO
     df = pd.read_csv(StringIO(dados_csv))
+    
+    # Converter timestamp para segundos
     df['Tempo_seg'] = df['Timestamp'] / 1000
+    
+    # Converter timestamp para minutos (mais fácil de ler)
     df['Tempo_min'] = df['Tempo_seg'] / 60
     
     print("✅ Dados processados com sucesso!")
@@ -573,24 +586,33 @@ def processar_dados():
     
     return df
 
+# ===============================================
+# 📈 GRÁFICO 1: SÉRIE TEMPORAL DA TEMPERATURA
+# ===============================================
+
 def grafico_temperatura(df):
     """Gráfico de linha mostrando evolução da temperatura"""
+    
     plt.figure(figsize=(12, 6))
     
+    # Plotar linha principal
     plt.plot(df['Tempo_min'], df['Temperatura'], 
              linewidth=2, marker='o', markersize=4, 
              color='#FF6B6B', label='Temperatura')
     
+    # Linhas de referência para alertas
     plt.axhline(y=29, color='orange', linestyle='--', alpha=0.7, 
                 label='Atenção (29°C)')
     plt.axhline(y=32, color='red', linestyle='--', alpha=0.7, 
                 label='Alerta (32°C)')
     
+    # Destacar pontos de alerta
     alertas = df[df['Status'] == 'ALERTA']
     if len(alertas) > 0:
         plt.scatter(alertas['Tempo_min'], alertas['Temperatura'], 
                    color='red', s=100, zorder=5, label='Pontos de Alerta')
     
+    # Configurações do gráfico
     plt.title('📊 Monitoramento de Temperatura Industrial\nSistema Hermes Reply', 
               fontsize=14, fontweight='bold', pad=20)
     plt.xlabel('Tempo (minutos)', fontsize=12)
@@ -598,6 +620,7 @@ def grafico_temperatura(df):
     plt.legend(fontsize=10)
     plt.grid(True, alpha=0.3)
     
+    # Adicionar anotações nos picos
     temp_max = df.loc[df['Temperatura'].idxmax()]
     plt.annotate(f'Pico: {temp_max["Temperatura"]:.1f}°C', 
                 xy=(temp_max['Tempo_min'], temp_max['Temperatura']),
@@ -610,10 +633,16 @@ def grafico_temperatura(df):
     print("✅ Gráfico 1 salvo: 1_temperatura_temporal.png")
     plt.show()
 
+# ===============================================
+# 📈 GRÁFICO 2: CORRELAÇÃO TEMPERATURA vs VIBRAÇÃO
+# ===============================================
+
 def grafico_correlacao(df):
     """Gráfico de dispersão mostrando correlação"""
+    
     plt.figure(figsize=(10, 8))
     
+    # Cores por status
     cores = {'NORMAL': '#2ECC71', 'ATENCAO': '#F39C12', 'ALERTA': '#E74C3C'}
     
     for status in df['Status'].unique():
@@ -621,11 +650,13 @@ def grafico_correlacao(df):
         plt.scatter(dados_status['Temperatura'], dados_status['Vibracao'],
                    c=cores[status], label=status, alpha=0.7, s=60)
     
+    # Linha de tendência
     z = np.polyfit(df['Temperatura'], df['Vibracao'], 1)
     p = np.poly1d(z)
     plt.plot(df['Temperatura'], p(df['Temperatura']), 
              "r--", alpha=0.8, linewidth=2, label='Tendência')
     
+    # Calcular correlação
     correlacao = df['Temperatura'].corr(df['Vibracao'])
     
     plt.title(f'📊 Correlação: Temperatura vs Vibração\nCorrelação: {correlacao:.3f}', 
@@ -635,6 +666,7 @@ def grafico_correlacao(df):
     plt.legend(fontsize=10)
     plt.grid(True, alpha=0.3)
     
+    # Adicionar texto com correlação
     plt.text(0.05, 0.95, f'Correlação de Pearson: {correlacao:.3f}', 
              transform=plt.gca().transAxes, fontsize=11,
              bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
@@ -644,16 +676,23 @@ def grafico_correlacao(df):
     print("✅ Gráfico 2 salvo: 2_correlacao_temp_vibracao.png")
     plt.show()
 
+# ===============================================
+# 📈 GRÁFICO 3: DISTRIBUIÇÃO DOS STATUS
+# ===============================================
+
 def grafico_status(df):
     """Gráfico de barras mostrando distribuição dos status"""
+    
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
     
+    # Gráfico de barras
     status_counts = df['Status'].value_counts()
     cores_status = ['#2ECC71', '#F39C12', '#E74C3C']
     
     bars = ax1.bar(status_counts.index, status_counts.values, 
                    color=cores_status[:len(status_counts)])
     
+    # Adicionar valores nas barras
     for bar in bars:
         height = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2., height + 0.1,
@@ -663,6 +702,7 @@ def grafico_status(df):
     ax1.set_ylabel('Quantidade de Leituras')
     ax1.grid(True, alpha=0.3)
     
+    # Gráfico de pizza
     ax2.pie(status_counts.values, labels=status_counts.index, autopct='%1.1f%%',
             colors=cores_status[:len(status_counts)], startangle=90)
     ax2.set_title('📊 Percentual dos Status', fontweight='bold')
@@ -672,8 +712,13 @@ def grafico_status(df):
     print("✅ Gráfico 3 salvo: 3_distribuicao_status.png")
     plt.show()
 
+# ===============================================
+# 📈 GRÁFICO 4: DASHBOARD COMPLETO
+# ===============================================
+
 def dashboard_completo(df):
     """Dashboard com todos os sensores"""
+    
     fig, axes = plt.subplots(2, 2, figsize=(16, 10))
     fig.suptitle('🏭 Dashboard Sistema de Monitoramento Industrial\nHermes Reply Challenge', 
                  fontsize=16, fontweight='bold')
@@ -711,8 +756,61 @@ def dashboard_completo(df):
     print("✅ Gráfico 4 salvo: 4_dashboard_completo.png")
     plt.show()
 
+# ===============================================
+# 📈 GRÁFICO 5: ANÁLISE DE ALERTAS
+# ===============================================
+
+def grafico_alertas(df):
+    """Gráfico mostrando quando ocorreram os alertas"""
+    
+    plt.figure(figsize=(14, 8))
+    
+    # Criar subplot com dois eixos Y
+    fig, ax1 = plt.subplots(figsize=(14, 8))
+    ax2 = ax1.twinx()
+    
+    # Temperatura no eixo principal
+    line1 = ax1.plot(df['Tempo_min'], df['Temperatura'], 
+                     'r-o', linewidth=2, markersize=4, label='Temperatura')
+    ax1.set_ylabel('Temperatura (°C)', color='red', fontsize=12)
+    ax1.tick_params(axis='y', labelcolor='red')
+    
+    # Vibração no eixo secundário
+    line2 = ax2.plot(df['Tempo_min'], df['Vibracao'], 
+                     'b-s', linewidth=2, markersize=4, label='Vibração')
+    ax2.set_ylabel('Vibração (unidades)', color='blue', fontsize=12)
+    ax2.tick_params(axis='y', labelcolor='blue')
+    
+    # Destacar momentos de alerta
+    alertas = df[df['Status'] == 'ALERTA']
+    for _, alerta in alertas.iterrows():
+        ax1.axvline(x=alerta['Tempo_min'], color='red', alpha=0.3, linewidth=8)
+        ax1.text(alerta['Tempo_min'], alerta['Temperatura'] + 1, 'ALERTA!', 
+                rotation=90, ha='center', va='bottom', fontweight='bold', color='red')
+    
+    ax1.set_xlabel('Tempo (minutos)', fontsize=12)
+    ax1.set_title('🚨 Análise Temporal de Alertas do Sistema\nMomentos Críticos Destacados', 
+                  fontsize=14, fontweight='bold', pad=20)
+    
+    # Legenda combinada
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+    
+    ax1.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('5_analise_alertas.png', dpi=300, bbox_inches='tight')
+    print("✅ Gráfico 5 salvo: 5_analise_alertas.png")
+    plt.show()
+
+# ===============================================
+# 📊 RELATÓRIO DE ESTATÍSTICAS
+# ===============================================
+
 def gerar_relatorio(df):
     """Gerar relatório com estatísticas"""
+    
     print("\n" + "="*60)
     print("📋 RELATÓRIO ESTATÍSTICO - SISTEMA HERMES REPLY")
     print("="*60)
@@ -743,21 +841,43 @@ def gerar_relatorio(df):
     print(f"\n🔗 CORRELAÇÕES:")
     print(f"   • Temperatura vs Vibração: {df['Temperatura'].corr(df['Vibracao']):.3f}")
     print(f"   • Temperatura vs Umidade: {df['Temperatura'].corr(df['Umidade']):.3f}")
+    
+    # Salvar relatório em arquivo
+    with open('relatorio_estatisticas.txt', 'w', encoding='utf-8') as f:
+        f.write("RELATÓRIO ESTATÍSTICO - SISTEMA HERMES REPLY\n")
+        f.write("="*50 + "\n\n")
+        f.write(f"Total de leituras: {len(df)}\n")
+        f.write(f"Período: {df['Tempo_min'].max():.1f} minutos\n")
+        f.write(f"Temperatura média: {df['Temperatura'].mean():.1f}°C\n")
+        f.write(f"Temperatura máxima: {df['Temperatura'].max():.1f}°C\n")
+        f.write(f"Alertas: {status_counts.get('ALERTA', 0)}\n")
+        f.write(f"Correlação Temp-Vibração: {df['Temperatura'].corr(df['Vibracao']):.3f}\n")
+    
+    print(f"\n✅ Relatório salvo em: relatorio_estatisticas.txt")
+
+# ===============================================
+# 🚀 FUNÇÃO PRINCIPAL
+# ===============================================
 
 def main():
     """Função principal - executa toda a análise"""
+    
     print("🚀 INICIANDO ANÁLISE DOS DADOS...")
     print("Hermes Reply Challenge - Sistema de Monitoramento Industrial")
     print("="*60)
     
+    # Processar dados
     df = processar_dados()
     
+    # Gerar todos os gráficos
     print("\n📈 Gerando gráficos...")
     grafico_temperatura(df)
     grafico_correlacao(df)
     grafico_status(df)
     dashboard_completo(df)
+    grafico_alertas(df)
     
+    # Gerar relatório
     gerar_relatorio(df)
     
     print("\n🎉 ANÁLISE COMPLETA!")
@@ -766,7 +886,13 @@ def main():
     print("   • 2_correlacao_temp_vibracao.png") 
     print("   • 3_distribuicao_status.png")
     print("   • 4_dashboard_completo.png")
+    print("   • 5_analise_alertas.png")
+    print("   • relatorio_estatisticas.txt")
     print("\n✅ Pronto para entregar o trabalho!")
+
+# ===============================================
+# 🎯 EXECUTAR SCRIPT
+# ===============================================
 
 if __name__ == "__main__":
     main()
